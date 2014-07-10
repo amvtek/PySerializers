@@ -1,0 +1,97 @@
+enum Enum4 {
+    VAL_0 = 0;
+    VAL_1 = 1;
+    VAL_2 = 2;
+    VAL_3 = 3;
+}
+
+enum Enum16 {
+    VAL_4 = 4;
+    VAL_5 = 5;
+    VAL_6 = 6;
+    VAL_7 = 7;
+    VAL_8 = 8;
+    VAL_9 = 9;
+    VAL_10 = 10;
+    VAL_11 = 11;
+    VAL_12 = 12;
+    VAL_13 = 13;
+    VAL_14 = 14;
+    VAL_15 = 15;
+    VAL_16 = 16;
+    VAL_17 = 17;
+    VAL_18 = 18;
+    VAL_19 = 19;
+}
+
+message NumStuff {
+
+    required int32 i01 = 1;
+
+    required int64 i02 = 2;
+
+    required double d03 = 3;
+    
+    required Enum4 e_04 = 4;
+
+    repeated int64 l1_i05 = 5;
+
+    repeated double l1_d06 = 6;
+
+    repeated Enum16 l1_e07 = 7;
+
+}
+
+message StringStuff {
+
+    required string s01 = 1;
+
+    required bytes b02 =2;
+
+    repeated string l1_s03 = 3;
+
+    repeated bytes l1_b04 = 4;
+}
+
+message ComboStuff {
+    
+    required int32 i01 = 1;
+
+    required int64 i02 = 2;
+
+    required double d03 = 3;
+    
+    required Enum4 e_04 = 4;
+
+    repeated int64 l1_i05 = 5;
+
+    repeated double l1_d06 = 6;
+    
+    repeated Enum16 l1_e07 = 7;
+
+    required string s08 = 8;
+
+    required bytes b09 = 9;
+
+    repeated string l1_s10 = 10;
+
+    repeated bytes l1_b11 = 11;
+}
+
+message ComboBunch {
+
+    required Enum16 e_01 = 1;
+
+    required NumStuff ns02 = 2;
+
+    required StringStuff ss03 = 3;
+
+    required ComboStuff cs04 = 4;
+
+    repeated NumStuff l2_ns05 = 5;
+
+    repeated StringStuff l2_ss06 = 6;
+
+    repeated ComboStuff l2_cs07 = 7;
+
+}
