@@ -4,6 +4,8 @@ PbThriftBenchmark
 
 Benchmark Protocol buffer vs Thrift using **Python** 
 
+See some `initial results`_ ...
+
 Installation :
 ==============
 
@@ -30,6 +32,9 @@ For help :
 To run with defaults options...:
     python run_benchmark.py
 
-.. _protocol buffer package: 
+.. _initial results: results.rst
+
+.. _protocol buffer package: https://pypi.python.org/pypi/protobuf/2.5.0
+
 .. _requirements.txt: requirements.txt
 
