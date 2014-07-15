@@ -37,4 +37,3 @@ To run with defaults options...:
 .. _protocol buffer package: https://pypi.python.org/pypi/protobuf/2.5.0
 
 .. _requirements.txt: requirements.txt
-
