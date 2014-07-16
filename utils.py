@@ -3,7 +3,8 @@
     utils
     ~~~~~
 
-    utilities to support comparing protobuf and thrift serialization
+    utilities to support comparing python implementation 
+    of serialization frameworks
 
     :copyright: (c) 2014 by sc AmvTek srl
     :email: devel@amvtek.com
@@ -115,4 +116,36 @@ def build_thrift_deserializer(StructClass, with_extension=False):
         msg.validate()
         return msg
 
+    return deserialize
+
+def is_pycapnp_available(ignored=False):
+    "return True if pycapnp can be imported"
+
+    try:
+        import capnp
+        return True
+
+    except:
+
+        return False
+
+def build_pycapnp_serializer():
+    "return callable serializing pycapnp message object"
+
+    def serialize(capnpobj):
+
+        return capnpobj.to_bytes()
+
+    return serialize
+
+
+def build_pycapnp_deserializer(Msg, ignored=False):
+    "return callable deserializing message encoding Msg.struct"
+
+    MsgClass = Msg.struct
+
+    def deserialize(data):
+
+        return MsgClass().from_bytes(data)
+    
     return deserialize

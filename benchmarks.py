@@ -9,7 +9,7 @@
     :copyright: (c) 2014 by sc AmvTek srl
     :email: devel@amvtek.com
 """
-__version__ = (1,0,0)
+__version__ = (1,1,0)
 
 from random import Random
 from struct import Struct
@@ -21,7 +21,8 @@ from utils import *
 
 FRAMEWORKS = [
         ('protobuf','py'), ('protobuf','pyext'),
-        ('thrift','py'), ('thrift','pyext')
+        ('thrift','py'), ('thrift','pyext'),
+        ('pycapnp',''),
         ]
 
 BENCHMARK_MESSAGES = ['NumStuff', 'StringStuff', 'ComboStuff', 'ComboBunch']
@@ -378,7 +379,22 @@ def build_benchmark(message, framework, implementation, target, **benchargs):
         benchargs['serialize_func'] = build_thrift_serializer(use_extension)
     
         build_dsrz = build_thrift_deserializer
+
+    elif framework == 'pycapnp':
     
+        # Validate that framework can be loaded 
+        if not is_pycapnp_available():
+            raise RuntimeError("required framework can not be loaded !")
+    
+        # load schema
+        from schema import get_pycapnpstuff
+        benchargs['schema'] = get_pycapnpstuff()
+
+        # add serializer
+        benchargs['serialize_func'] = build_pycapnp_serializer()
+    
+        build_dsrz = build_pycapnp_deserializer
+
     else:
 
         # shall not happen

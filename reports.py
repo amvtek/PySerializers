@@ -38,7 +38,10 @@ class BenchResult(object):
 
         self.message = message
         self.target = target
-        self.framework = "%s/%s" % (framework, implementation)
+        if implementation:
+            self.framework = "%s/%s" % (framework, implementation)
+        else:
+            self.framework = framework
 
     def as_result_row(self, condensed=True):
 
@@ -133,7 +136,7 @@ class Report(object):
         
         # Add report title
         buf = []
-        buf.append(underline("Thrift/Protobuf benchmark","#",True))
+        buf.append(underline("Python Serialization Benchmark","#",True))
         buf.append("")
 
         # check platform

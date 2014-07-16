@@ -117,7 +117,7 @@ def proc_run(func, args=None, kwargs=None):
 def list_available_frameworks(verbose=True):
     "return list of available frameworks"
 
-    from utils import is_protobuf_available, is_thrift_available
+    from utils import *
 
     need_ext = lambda impl:impl.startswith('pyext')
     
@@ -126,6 +126,7 @@ def list_available_frameworks(verbose=True):
             ('thrift','py',is_thrift_available),
             ('protobuf','pyext',is_protobuf_available),
             ('thrift','pyext',is_thrift_available),
+            ('pycapnp','',is_pycapnp_available),
             ]
     rv = []
     for frm,impl,found in frameworks :
