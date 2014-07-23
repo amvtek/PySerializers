@@ -146,6 +146,6 @@ def build_pycapnp_deserializer(Msg, ignored=False):
 
     def deserialize(data):
 
-        return MsgClass().from_bytes(data)
+        return MsgClass.from_bytes(data)
     
     return deserialize
