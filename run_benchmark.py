@@ -117,16 +117,18 @@ def proc_run(func, args=None, kwargs=None):
 def list_available_frameworks(verbose=True):
     "return list of available frameworks"
 
-    from utils import *
+    import utils
 
     need_ext = lambda impl:impl.startswith('pyext')
     
     frameworks = [
-            ('protobuf','py',is_protobuf_available),
-            ('thrift','py',is_thrift_available),
-            ('protobuf','pyext',is_protobuf_available),
-            ('thrift','pyext',is_thrift_available),
-            ('pycapnp','',is_pycapnp_available),
+            ('json','',utils.is_json_available),
+            ('msgpack','',utils.is_msgpack_available),
+            ('protobuf','py',utils.is_protobuf_available),
+            ('thrift','py',utils.is_thrift_available),
+            ('protobuf','pyext',utils.is_protobuf_available),
+            ('thrift','pyext',utils.is_thrift_available),
+            ('pycapnp','',utils.is_pycapnp_available),
             ]
     rv = []
     for frm,impl,found in frameworks :

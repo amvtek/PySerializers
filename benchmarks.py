@@ -9,7 +9,7 @@
     :copyright: (c) 2014 by sc AmvTek srl
     :email: devel@amvtek.com
 """
-__version__ = (1,1,0)
+__version__ = (1,2,0)
 
 from random import Random
 from struct import Struct
@@ -20,6 +20,7 @@ unpack_double = Struct('=d').unpack
 from utils import *
 
 FRAMEWORKS = [
+        ('json',''),('msgpack',''),
         ('protobuf','py'), ('protobuf','pyext'),
         ('thrift','py'), ('thrift','pyext'),
         ('pycapnp',''),
@@ -31,7 +32,10 @@ class StuffToTestRandom(Random):
     """Custom Random generator that ease the generation of StuffToTest messages"""
 
     _ucs2Range = (0, 0xffff)
-
+    
+    # this to overcome problem with thrift unicode handling when using pyext
+    # the range above is what needs to be used to generates 'meaningfull'
+    # random unicode...
     _ucs2Range = (0, 127)
 
     _i32Range = (-2**31, 2**31-1)
@@ -63,7 +67,9 @@ class StuffToTestRandom(Random):
     def randbyte(self):
         """return integer in range [0,255]"""
 
-        return self.randint(0, 255)
+        #return self.randint(0, 255)
+        # we restrict to (0,127) range to ease comparing with json
+        return self.randint(0, 127)
 
     def randbinary(self):
         """return random binary string"""
@@ -103,7 +109,7 @@ class StuffToTestRandom(Random):
         b8 = array('B', [rb() for i in xrange(8)]).tostring()
         return unpack_double(b8)[0]
 
-    def gen_numstuff(self, ProtoOrThrift):
+    def gen_numstuff(self):
         """return random NumStuff datas..."""
 
         l1range = self.l1range  # local alias
@@ -127,9 +133,9 @@ class StuffToTestRandom(Random):
         l1 = self.choice(l1range)
         rv['l1_e07'] = [self.rande16() for i in xrange(l1)]
 
-        return ProtoOrThrift.NumStuff(**rv)
+        return rv
 
-    def gen_stringstuff(self, ProtoOrThrift):
+    def gen_stringstuff(self):
         """return random StringStuff datas..."""
 
         l1range = self.l1range # local alias
@@ -146,9 +152,9 @@ class StuffToTestRandom(Random):
         l1 = self.choice(l1range)
         rv['l1_b04'] = [self.randbinary() for i in xrange(l1)]
 
-        return ProtoOrThrift.StringStuff(**rv)
+        return rv
 
-    def gen_combostuff(self, ProtoOrThrift):
+    def gen_combostuff(self):
         """return random ComboStuff datas..."""
 
         l1range = self.l1range  # local alias
@@ -182,9 +188,9 @@ class StuffToTestRandom(Random):
         l1 = self.choice(l1range)
         rv['l1_b11'] = [self.randbinary() for i in xrange(l1)]
 
-        return ProtoOrThrift.ComboStuff(**rv)
+        return rv
 
-    def gen_combobunch(self, ProtoOrThrift):
+    def gen_combobunch(self):
         """return random ComboBunch datas"""
         
         # local alias
@@ -194,22 +200,22 @@ class StuffToTestRandom(Random):
 
         rv['e_01'] = self.rande16()
 
-        rv['ns02'] = self.gen_numstuff(ProtoOrThrift)
+        rv['ns02'] = self.gen_numstuff()
 
-        rv['ss03'] = self.gen_stringstuff(ProtoOrThrift)
+        rv['ss03'] = self.gen_stringstuff()
 
-        rv['cs04'] = self.gen_combostuff(ProtoOrThrift)
-
-        l2 = self.choice(l2range)
-        rv['l2_ns05'] = [self.gen_numstuff(ProtoOrThrift) for i in xrange(l2)]
+        rv['cs04'] = self.gen_combostuff()
 
         l2 = self.choice(l2range)
-        rv['l2_ss06'] = [self.gen_stringstuff(ProtoOrThrift) for i in xrange(l2)]
+        rv['l2_ns05'] = [self.gen_numstuff() for i in xrange(l2)]
 
         l2 = self.choice(l2range)
-        rv['l2_cs07'] = [self.gen_combostuff(ProtoOrThrift) for i in xrange(l2)]
+        rv['l2_ss06'] = [self.gen_stringstuff() for i in xrange(l2)]
 
-        return ProtoOrThrift.ComboBunch(**rv)
+        l2 = self.choice(l2range)
+        rv['l2_cs07'] = [self.gen_combostuff() for i in xrange(l2)]
+
+        return rv
 
 
 class Benchmark(object):
@@ -285,53 +291,95 @@ class Benchmark(object):
 
         raise NotImplemented("gen_message_datas not implemented !")
 
+    def get_message_factory(self):
+        """return object wrapping the message class"""
+        
+        raise NotImplemented("get_message_factory not implemented !")
+
     def gen_benchmark_sample(self):
 
         # seed random number generation
         self.rnd.seed(self.seed)
 
-        return [self.gen_message_datas() for i in xrange(self.ns)]
+        noop = lambda d:d
+
+        prep = getattr(self.get_message_factory(),'prepare', noop)
+        
+        return [prep(self.gen_message_datas()) for i in xrange(self.ns)]
 
     def prepare_serialize(self):
 
+        # prepare sample (a sequence of datas dictionaries...)
         self.sample = self.gen_benchmark_sample()
+
+        # prepare build_and_serialize function
+        mf = self.get_message_factory()
+        newobj = mf.newobj
+        srz = self.serialize
+        self.build_and_serialize = lambda datas:srz(newobj(datas))
 
     def run_serialize(self):
 
-        map(self.serialize, self.sample)
+        map(self.build_and_serialize, self.sample)
 
     def prepare_deserialize(self):
 
-        srz = self.serialize
-        self.sample = [srz(m) for m in self.gen_benchmark_sample()]
+        mf = self.get_message_factory()
+        newobj = mf.newobj
+        
+        # prepare sample (a sequence of serialized messages...)
+        serialize = self.serialize
+        build_and_srz = lambda datas:serialize(newobj(datas))
+        self.sample = map(build_and_srz, self.gen_benchmark_sample())
+
+        # prepare deserialize_and_read function
+        todict = mf.todict
+        deserialize = self.deserialize
+        self.deserialize_and_read = lambda smsg:todict(deserialize(smsg))
 
     def run_deserialize(self):
 
-        map(self.deserialize, self.sample)
+        map(self.deserialize_and_read, self.sample)
 
 class NumStuffBenchmark(Benchmark):
 
+    def get_message_factory(self):
+
+        return self.schema.NumStuff
+
     def gen_message_datas(self):
 
-        return self.rnd.gen_numstuff(self.schema)
+        return self.rnd.gen_numstuff()
 
 class StringStuffBenchmark(Benchmark):
 
+    def get_message_factory(self):
+
+        return self.schema.StringStuff
+    
     def gen_message_datas(self):
 
-        return self.rnd.gen_stringstuff(self.schema)
+        return self.rnd.gen_stringstuff()
 
 class ComboStuffBenchmark(Benchmark):
 
+    def get_message_factory(self):
+
+        return self.schema.ComboStuff
+    
     def gen_message_datas(self):
 
-        return self.rnd.gen_combostuff(self.schema)
+        return self.rnd.gen_combostuff()
 
 class ComboBunchBenchmark(Benchmark):
 
+    def get_message_factory(self):
+
+        return self.schema.ComboBunch
+    
     def gen_message_datas(self):
 
-        return self.rnd.gen_combobunch(self.schema)
+        return self.rnd.gen_combobunch()
 
 def build_benchmark(message, framework, implementation, target, **benchargs):
     "return ready to run benchmark"
@@ -394,6 +442,36 @@ def build_benchmark(message, framework, implementation, target, **benchargs):
         benchargs['serialize_func'] = build_pycapnp_serializer()
     
         build_dsrz = build_pycapnp_deserializer
+
+    elif framework == 'json':
+
+        # Validate that framework can be loaded 
+        if not is_json_available():
+            raise RuntimeError("required framework can not be loaded !")
+    
+        # load schema
+        from schema import get_jsonstuff
+        benchargs['schema'] = get_jsonstuff()
+
+        # add serializer
+        benchargs['serialize_func'] = build_json_serializer()
+    
+        build_dsrz = build_json_deserializer
+        
+    elif framework == 'msgpack':
+
+        # Validate that framework can be loaded 
+        if not is_msgpack_available():
+            raise RuntimeError("required framework can not be loaded !")
+    
+        # load schema
+        from schema import get_msgpackstuff
+        benchargs['schema'] = get_msgpackstuff()
+
+        # add serializer
+        benchargs['serialize_func'] = build_msgpack_serializer()
+    
+        build_dsrz = build_msgpack_deserializer
 
     else:
 

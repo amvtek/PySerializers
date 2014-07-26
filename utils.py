@@ -41,12 +41,16 @@ def build_protobuf_serializer():
     return serialize
 
 
-def build_protobuf_deserializer(MsgClass, with_extension=False):
+def build_protobuf_deserializer(Msg, with_extension=False):
     "return callable deserializing message encoding MsgClass"
+
+    MsgClass = Msg.struct
 
     def deserialize(data):
 
-        return MsgClass().ParseFromString(data)
+        rv = MsgClass()
+        rv.ParseFromString(data)
+        return rv
     
     return deserialize
 
@@ -94,7 +98,7 @@ def build_thrift_serializer(with_extension=False):
 
     return serialize
 
-def build_thrift_deserializer(StructClass, with_extension=False):
+def build_thrift_deserializer(Msg, with_extension=False):
     "return callable deserializing message encoding StructClass"
     
     from thrift.protocol import TBinaryProtocol
@@ -108,6 +112,8 @@ def build_thrift_deserializer(StructClass, with_extension=False):
         Protocol = TBinaryProtocol.TBinaryProtocolAccelerated
     else:
         Protocol = TBinaryProtocol.TBinaryProtocol
+
+    StructClass = Msg.struct
 
     def deserialize(data):
         
@@ -149,3 +155,50 @@ def build_pycapnp_deserializer(Msg, ignored=False):
         return MsgClass.from_bytes(data)
     
     return deserialize
+
+def is_json_available(ignored=False):
+    "return True if json can be imported"
+
+    try:
+        import json
+        return True
+    except:
+        return False
+
+def build_json_serializer():
+    "return json.dumps callable"
+
+    from json import dumps
+
+    return dumps
+
+def build_json_deserializer(Msg, ignored=False):
+    "return json.loads callable"
+
+    from json import loads
+
+    return loads
+
+def is_msgpack_available(ignored=False):
+    "return True if msgpack can be imported"
+
+    try:
+        import msgpack
+        return True
+    except:
+        return False
+
+def build_msgpack_serializer():
+    "return msgpack.dumps callable"
+
+    from msgpack import dumps
+
+    return dumps
+
+def build_msgpack_deserializer(Msg, ignored=False):
+    "return msgpack.loads callable"
+
+    from msgpack import loads
+    from functools import partial
+
+    return partial(loads,use_list=0)
