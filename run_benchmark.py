@@ -14,6 +14,17 @@ from timeit import timeit
 
 
 from benchmarks import build_benchmark
+import utils
+
+FRAMEWORKS = [
+    ('json', utils.is_json_available),
+    ('msgpack', utils.is_msgpack_available),
+    ('protobuf/py', utils.is_protobuf_available),
+    ('thrift/py', utils.is_thrift_available),
+    ('protobuf/pyext', utils.is_protobuf_available),
+    ('thrift/pyext', utils.is_thrift_available),
+    ('pycapnp', utils.is_pycapnp_available),
+]
 
 class ProcessCrash(RuntimeError):
     pass
@@ -21,6 +32,8 @@ class ProcessCrash(RuntimeError):
 def parse_command_line():
     "read and parse command line"
 
+    supported = [t[0] for t in FRAMEWORKS]
+    
     def size(v):
         v = int(v)
         if v <= 0:
@@ -36,6 +49,13 @@ def parse_command_line():
             help="list message class to benchmark (default all %(default)s)",
             default=['NumStuff','StringStuff','ComboStuff','ComboBunch'],
             choices=['NumStuff','StringStuff','ComboStuff','ComboBunch'],
+            )
+
+    parser.add_argument(
+            "-f","--frameworks",metavar="FRMW", nargs='*',
+            help="list framework to benchmark (default all %(default)s)",
+            default=supported,
+            choices=supported,
             )
 
     parser.add_argument(
@@ -114,25 +134,22 @@ def proc_run(func, args=None, kwargs=None):
     else:
         raise ProcessCrash()
 
-def list_available_frameworks(verbose=True):
+def list_available_frameworks(frameworks):
     "return list of available frameworks"
 
-    import utils
-
+    check_frameworks = dict(FRAMEWORKS)
     need_ext = lambda impl:impl.startswith('pyext')
     
-    frameworks = [
-            ('json','',utils.is_json_available),
-            ('msgpack','',utils.is_msgpack_available),
-            ('protobuf','py',utils.is_protobuf_available),
-            ('thrift','py',utils.is_thrift_available),
-            ('protobuf','pyext',utils.is_protobuf_available),
-            ('thrift','pyext',utils.is_thrift_available),
-            ('pycapnp','',utils.is_pycapnp_available),
-            ]
     rv = []
-    for frm,impl,found in frameworks :
-        rv.append((frm,impl,found(need_ext(impl))))
+    for frm in frameworks :
+
+        # retrieve availability detection function
+        detect_func = check_frameworks.get(frm)
+        
+        if detect_func:
+
+            frm, impl = ("%s/"%frm).split('/')[:2]
+            rv.append((frm,impl, detect_func(need_ext(impl))))
 
     return rv
 
@@ -141,7 +158,7 @@ def get_benchargs(clargs, ctx):
 
     rv = dict(clargs.__dict__)
     
-    for arg in ['messages', 'nrun', 'outpath']:
+    for arg in ['messages', 'nrun', 'outpath', 'frameworks']:
         rv.pop(arg, None)
 
     for arg in ['message', 'target', 'framework', 'implementation']:
@@ -171,7 +188,7 @@ if __name__ == '__main__':
     report = reports.Report()
 
     # check what frameworks are available on local machine
-    frameworks = proc_run(list_available_frameworks)
+    frameworks = proc_run(list_available_frameworks, args=(args.frameworks,))
 
     print report.add_header(args)
 
@@ -184,7 +201,7 @@ if __name__ == '__main__':
 
             res = []
             
-            for framework, implementation,installed in frameworks:
+            for framework, implementation, installed in frameworks:
 
                 r = BR(message, target, framework, implementation)
 
