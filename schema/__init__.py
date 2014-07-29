@@ -23,6 +23,8 @@ FNIDX = [
             ('e_01','ns02','ss03','cs04','l2_ns05','l2_ss06','l2_cs07'))
         ]
 
+version_string = lambda vtuple:"%s.%s.%s"%vtuple
+
 class SchemaContainer(object):
     "holds references to StuffToTest messages..."
 
@@ -231,7 +233,7 @@ def get_msgpackstuff():
     import msgpack
 
     # contruct schema
-    schema = SchemaContainer('msgpack', msgpack.version)
+    schema = SchemaContainer('msgpack', version_string(msgpack.version))
 
     context = {}
 
@@ -258,7 +260,7 @@ def get_protostuff():
     import proto_2_5_0.StuffToTest_pb2 as schmod
     
     # contruct schema
-    schema = SchemaContainer('protobuf', (2,5,0))
+    schema = SchemaContainer('protobuf', "2.5.0")
 
     context = {}
 
@@ -285,7 +287,7 @@ def get_thriftstuff():
     import thrift_0_9_0.StuffToTest.constants as schmod
     
     # contruct schema
-    schema = SchemaContainer('thrift', (0,9,0))
+    schema = SchemaContainer('thrift', "0.9.0")
 
     context = {}
 

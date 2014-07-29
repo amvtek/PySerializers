@@ -286,6 +286,11 @@ class Benchmark(object):
         runmeth = "run_%s" % target
         self.run = getattr(self, runmeth)
 
+    def get_framework_version(self):
+        return getattr(self.schema,'version',None)
+    framework_version = property(get_framework_version)
+
+
     def gen_message_datas(self):
         """return dict containing message datas"""
 

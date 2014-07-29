@@ -174,7 +174,7 @@ def run_benchmark(benchargs, nrun):
 
     # run benchmark
     timed = timeit(stmt=benchmark.run, number=nrun)
-    return timed/(1.0*nrun*benchmark.ns)
+    return timed/(1.0*nrun*benchmark.ns), benchmark.framework_version
 
 
 if __name__ == '__main__':
@@ -210,8 +210,7 @@ if __name__ == '__main__':
                     try:
 
                         benchargs = get_benchargs(args, locals())
-                        
-                        r.opTime = proc_run(run_benchmark, args=(benchargs,nrun))
+                        r.opTime, r.version = proc_run(run_benchmark, args=(benchargs,nrun))
                         r.status = BR.SUCCESS
 
                     except ProcessCrash:

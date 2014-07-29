@@ -34,14 +34,25 @@ class BenchResult(object):
     
     rank = None
 
-    def __init__(self, message, target, framework, implementation):
+    def __init__(self, message, target, framework, implementation, version=""):
 
         self.message = message
         self.target = target
-        if implementation:
-            self.framework = "%s/%s" % (framework, implementation)
-        else:
-            self.framework = framework
+        self.framework_name = framework
+        self.implementation = implementation
+        self.version = version
+
+    def get_framework(self):
+        "return library name"
+
+        framework = self.framework_name
+        if self.implementation:
+            framework = "%s/%s" % (framework, self.implementation)
+        if self.version:
+            framework = "%s %s" % (framework, self.version)
+
+        return framework
+    framework = property(get_framework)
 
     def as_result_row(self, condensed=True):
 
