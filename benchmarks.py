@@ -20,7 +20,10 @@ unpack_double = Struct('=d').unpack
 from utils import *
 
 FRAMEWORKS = [
-        ('json',''),('msgpack',''),
+        ('json',''),
+        ('sjson',''),
+        ('ujson',''),
+        ('msgpack',''),
         ('protobuf','py'), ('protobuf','pyext'),
         ('thrift','py'), ('thrift','pyext'),
         ('pycapnp',''),
@@ -462,6 +465,38 @@ def build_benchmark(message, framework, implementation, target, **benchargs):
         benchargs['serialize_func'] = build_json_serializer()
     
         build_dsrz = build_json_deserializer
+
+
+    elif framework == 'sjson':
+
+        # Validate that framework can be loaded
+        if not is_sjson_available():
+            raise RuntimeError("required framework can not be loaded !")
+
+        # load schema
+        from schema import get_sjsonstuff
+        benchargs['schema'] = get_sjsonstuff()
+
+        # add serializer
+        benchargs['serialize_func'] = build_sjson_serializer()
+
+        build_dsrz = build_sjson_deserializer
+
+
+    elif framework == 'ujson':
+
+        # Validate that framework can be loaded
+        if not is_ujson_available():
+            raise RuntimeError("required framework can not be loaded !")
+
+        # load schema
+        from schema import get_ujsonstuff
+        benchargs['schema'] = get_ujsonstuff()
+
+        # add serializer
+        benchargs['serialize_func'] = build_ujson_serializer()
+
+        build_dsrz = build_ujson_deserializer
         
     elif framework == 'msgpack':
 

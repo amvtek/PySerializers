@@ -165,6 +165,24 @@ def is_json_available(ignored=False):
     except:
         return False
 
+def is_sjson_available(ignored=False):
+    "return True if simplejson can be imported"
+
+    try:
+        import simplejson
+        return True
+    except:
+        return False
+
+def is_ujson_available(ignored=False):
+    "return True if ujson can be imported"
+
+    try:
+        import ujson
+        return True
+    except:
+        return False
+
 def build_json_serializer():
     "return json.dumps callable"
 
@@ -172,10 +190,38 @@ def build_json_serializer():
 
     return dumps
 
+def build_sjson_serializer():
+    "return simplejson.dumps callable"
+
+    from simplejson import dumps
+
+    return dumps
+
+def build_ujson_serializer():
+    "return ujson.dumps callable"
+
+    from ujson import dumps
+
+    return dumps
+
 def build_json_deserializer(Msg, ignored=False):
     "return json.loads callable"
 
     from json import loads
+
+    return loads
+
+def build_sjson_deserializer(Msg, ignored=False):
+    "return json.loads callable"
+
+    from simplejson import loads
+
+    return loads
+
+def build_ujson_deserializer(Msg, ignored=False):
+    "return json.loads callable"
+
+    from ujson import loads
 
     return loads
 
