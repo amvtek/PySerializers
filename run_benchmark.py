@@ -3,7 +3,7 @@
     run_benchmark
     ~~~~~~~~~~~~~
 
-    Command line runner for Protobuf/Thrift benchmark
+    Command line runner for Python serializers benchmark
 
     :copyright: (c) 2014 by sc AmvTek srl
     :email: devel@amvtek.com
@@ -41,7 +41,7 @@ def parse_command_line():
         return v
 
     parser = argparse.ArgumentParser(
-        description="Compare performance of Thrift & Protobuf serialization"
+        description="Compare Python performance of Serialization frameworks"
         )
 
     parser.add_argument(

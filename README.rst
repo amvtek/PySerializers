@@ -1,8 +1,8 @@
-#################
-PbThriftBenchmark
-#################
+############################
+Python Serializers Benchmark
+############################
 
-Benchmark Protocol buffer vs Thrift using **Python** 
+Benchmark performances of various **Python** serialization frameworks.
 
 See some `initial results`_ ...
 
