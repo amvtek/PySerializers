@@ -32,7 +32,7 @@ For help :
 To run with defaults options...:
     python run_benchmark.py
 
-.. _initial results: results.rst
+.. _initial results: results/linux_ubuntu-trusty_64b.rst
 
 .. _protocol buffer package: https://pypi.python.org/pypi/protobuf/2.5.0
 
