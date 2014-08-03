@@ -18,6 +18,8 @@ import utils
 
 FRAMEWORKS = [
     ('json', utils.is_json_available),
+    ('sjson', utils.is_sjson_available),
+    ('ujson', utils.is_ujson_available),
     ('msgpack', utils.is_msgpack_available),
     ('protobuf/py', utils.is_protobuf_available),
     ('thrift/py', utils.is_thrift_available),

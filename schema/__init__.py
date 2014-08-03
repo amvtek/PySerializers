@@ -1,5 +1,7 @@
 #  -*- coding: utf-8 -*-
 
+import importlib
+from functools import partial
 from os.path import abspath, dirname, join
 
 __all__ = [
@@ -200,13 +202,13 @@ class CapNpStructProxy(StructProxy):
 
 
 # provide json version of StuffToTest schema
-def get_jsonstuff():
+def get_jsonstuff_internal(module_name):
     "return json equivalent for StuffToTest schema"
 
-    import json
+    module = importlib.import_module(module_name)
 
     # contruct schema
-    schema = SchemaContainer('json', json.__version__)
+    schema = SchemaContainer('module_name', module.__version__)
 
     context = {}
 
@@ -225,6 +227,10 @@ def get_jsonstuff():
         context[message] = structProxy
 
     return schema
+
+get_jsonstuff = partial(get_jsonstuff_internal, 'json')
+get_sjsonstuff = partial(get_jsonstuff_internal, 'simplejson')
+get_ujsonstuff = partial(get_jsonstuff_internal, 'ujson')
 
 # provide msgpack version of StuffToTest schema
 def get_msgpackstuff():
